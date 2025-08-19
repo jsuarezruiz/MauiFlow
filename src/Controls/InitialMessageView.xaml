@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiFlow.Controls.InitialMessageView">
+    <Grid BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main Content -->
+        <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+            <!-- Title -->
+            <Label Text="Build your dream .NET MAUI app" 
+                   FontFamily="OpenSansBold" 
+                   FontSize="40" 
+                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                   HorizontalOptions="Center" 
+                   Margin="0,0,0,40"
+                   IsVisible="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}"/>
+
+            <!-- Subtitle -->
+            <Label Text="Describe what you want to build and watch the magic happen" 
+                   FontFamily="OpenSansRegular" 
+                   FontSize="18" 
+                   TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                   HorizontalOptions="Center" 
+                   Margin="0,0,0,40"
+                   IsVisible="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}"/>
+
+            <!-- Input Section -->
+            <Border BackgroundColor="{AppThemeBinding Light={StaticResource InputBackgroundLight}, Dark={StaticResource InputBackgroundDark}}" 
+                    Stroke="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}" 
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 16" 
+                    MaximumWidthRequest="600" 
+                    MinimumHeightRequest="60" 
+                    Margin="20,0,20,20"
+                    IsVisible="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Entry Grid.Column="0" 
+                           Placeholder="Ask MauiFlow to build an app..." 
+                           Text="{Binding UserPrompt, Mode=TwoWay}"
+                           FontFamily="OpenSansRegular" 
+                           FontSize="16"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                           BackgroundColor="Transparent" 
+                           VerticalOptions="Center" 
+                           Margin="20,0"
+                           ReturnType="Send"
+                           ReturnCommand="{Binding EvaluatePromptCommand}"/>
+                    <Button Grid.Column="1" 
+                            BackgroundColor="{StaticResource PrimaryPurple}"
+                            CornerRadius="12"
+                            WidthRequest="44" 
+                            HeightRequest="44" 
+                            Margin="0,8,8,8"
+                            Text="➤" 
+                            FontSize="18"
+                            TextColor="White"
+                            Command="{Binding EvaluatePromptCommand}"
+                            IsEnabled="{Binding CanSubmitPrompt}">
+                        <Button.Shadow>
+                            <Shadow Brush="{StaticResource PrimaryPurple}"
+                                    Offset="0,2"
+                                    Radius="8"
+                                    Opacity="0.3"/>
+                        </Button.Shadow>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Model Info -->
+            <StackLayout Orientation="Horizontal" 
+                         HorizontalOptions="Center"
+                         IsVisible="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}">
+                <Label Text="🤖" FontSize="16" VerticalOptions="Center"/>
+                <Label Text="Powered by Azure OpenAI" 
+                       FontFamily="OpenSansRegular" 
+                       FontSize="14" 
+                       TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                       VerticalOptions="Center"
+                       Margin="8,0,0,0"/>
+            </StackLayout>
+        </StackLayout>
+
+        <!-- Quick Action Buttons -->
+        <StackLayout Grid.Row="1" 
+                     Orientation="Horizontal" 
+                     HorizontalOptions="Center" 
+                     Margin="0,20,0,40"
+                     Spacing="12"
+                     IsVisible="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}">
+            <Button Style="{StaticResource ModernButtonStyle}" 
+                    WidthRequest="180"
+                    Text="📝 Todo List App"
+                    Command="{Binding EvaluatePromptCommand}"
+                    CommandParameter="Create a modern todo list app with add, edit, delete, and mark as complete functionality"/>
+            <Button Style="{StaticResource ModernButtonStyle}" 
+                    WidthRequest="180"
+                    Text="🏠 Landing Page"
+                    Command="{Binding EvaluatePromptCommand}"
+                    CommandParameter="Create a beautiful landing page with hero section, features, and contact form"/>
+            <Button Style="{StaticResource ModernButtonStyle}" 
+                    WidthRequest="180"
+                    Text="🔢 Calculator"
+                    Command="{Binding EvaluatePromptCommand}"
+                    CommandParameter="Create a calculator app with basic operations (add, subtract, multiply, divide) and a clean UI layout"/>
+        </StackLayout>
+
+    </Grid>
+</ContentView>

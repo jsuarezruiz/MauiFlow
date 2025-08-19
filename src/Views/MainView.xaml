@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MauiFlow.Controls"
+             xmlns:sfPopup="clr-namespace:Syncfusion.Maui.Toolkit.Popup;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:views="clr-namespace:MauiFlow.Views"
+             x:Class="MauiFlow.Views.MainView"
+             Title="MauiFlow">
+    <Grid>
+        <!-- Main Background -->
+        <Rectangle Fill="{StaticResource PrimaryPurple}"/>
+
+        <!-- Main Container -->
+        <Border BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}" 
+                StrokeShape="RoundRectangle 12" 
+                Margin="12"
+                Stroke="Transparent">
+            <Grid ColumnDefinitions="*, Auto">
+
+                <!-- Main Content Area -->
+                <InitialMessageView IsVisible="{Binding HasChatStarted, Converter={StaticResource InvertedBoolConverter}}" />
+                <ChatView IsVisible="{Binding HasChatStarted}"
+                          Margin="0, 24, 0, 0"/>
+
+                <!-- Right Panel, Results/Preview Area -->
+                <Preview Grid.Column="1"/>
+
+                <!-- Toolbar -->
+                <Grid Grid.ColumnSpan="2"
+                      VerticalOptions="Start"
+                      Padding="8"
+                      ColumnDefinitions="Auto,*,Auto"
+                      MaximumHeightRequest="48"
+                      BackgroundColor="Transparent">
+                    <!-- Back Button -->
+                    <Border IsVisible="{Binding HasChatStarted}"
+                            IsEnabled="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}"
+                            VerticalOptions="Start"
+                            Style="{StaticResource IconButtonStyle}"
+                            WidthRequest="40" HeightRequest="40">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ResetCommand}" />
+                        </Border.GestureRecognizers>
+                        <Path Data="M15 18l-6-6 6-6"
+                              Fill="Transparent"
+                              Stroke="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                              StrokeThickness="2"
+                              StrokeLineJoin="Round"
+                              StrokeLineCap="Round"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center" />
+                    </Border>
+                    <!-- Spacer -->
+                    <Grid Grid.Column="1"/>
+                    <!-- Settings Icon -->
+                    <Grid Grid.Column="2"  
+                          ColumnDefinitions="*, *"
+                          WidthRequest="80"
+                          HeightRequest="40"
+                          VerticalOptions="Start"
+                          HorizontalOptions="End">
+                        <Border Style="{StaticResource IconButtonStyle}"
+                                IsVisible="False"
+                                WidthRequest="40" 
+                                HeightRequest="40"
+                                HorizontalOptions="End"
+                                VerticalOptions="Center">
+                            <!-- Export Icon -->
+                            <Path Data="M17,10l-5-5l-5,5h3v4h4v-4h3z M5,18h14c0.55,0,1-0.45,1-1v-4h-2v3H6v-3H4v4c0,0.55,0.45,1,1,1z"
+                                  Fill="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                  Aspect="Uniform"
+                                  VerticalOptions="Center"
+                                  HorizontalOptions="Center"/>
+                        </Border>
+                        <Border Grid.Column="1"
+                                Style="{StaticResource IconButtonStyle}"
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                HorizontalOptions="End"
+                                VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ToggleSettingsCommand}" />
+                            </Border.GestureRecognizers>
+                            <!-- Settings Icon -->
+                            <Path Data="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                                  Fill="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                  Aspect="Uniform"
+                                  VerticalOptions="Center"
+                                  HorizontalOptions="Center"/>
+                        </Border>
+                        <!-- Settings Popup -->
+                        <sfPopup:SfPopup x:Name="sfPopup"     
+                                         HeaderTitle="Azure OpenAI Settings"
+                                         IsOpen="{Binding IsSettingsVisible}"
+                                         ShowCloseButton="True"
+                                         WidthRequest="600"
+                                         HeightRequest="450">
+                            <sfPopup:SfPopup.ContentTemplate>
+                                <DataTemplate>
+                                    <views:SettingsView />
+                                </DataTemplate>
+                            </sfPopup:SfPopup.ContentTemplate>
+                        </sfPopup:SfPopup>
+                    </Grid>
+                </Grid>
+
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:MauiFlow.Behaviors"            
+             xmlns:idk="clr-namespace:Indiko.Maui.Controls.Markdown;assembly=Indiko.Maui.Controls.Markdown"
+             x:Class="MauiFlow.Controls.ChatView">
+    <Grid RowDefinitions="*, Auto">
+        <!-- Chat Messages -->
+        <CollectionView x:Name="MessagesCollectionView"
+                        ItemsSource="{Binding ChatMessages}"
+                        BackgroundColor="Transparent"
+                        SelectionMode="None"
+                        Margin="12">
+            <CollectionView.Behaviors>
+                <behaviors:ScrollToEndBehavior />
+            </CollectionView.Behaviors>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="16,8">
+                        <!-- User Message -->
+                        <Border IsVisible="{Binding Sender}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryPurpleLight}, Dark={StaticResource PrimaryPurpleDark}}"
+                                StrokeShape="RoundRectangle 16,16,4,16"
+                                StrokeThickness="0"
+                                Padding="16,12"
+                                Margin="60,0,0,0"
+                                HorizontalOptions="End">
+                            <Label Text="{Binding Content}"
+                                   TextColor="White"
+                                   FontSize="14"
+                                   LineBreakMode="WordWrap"/>
+                        </Border>
+                        <!-- AI Message -->
+                        <Grid RowDefinitions="Auto, *"
+                              IsVisible="{Binding Sender, Converter={StaticResource InvertedBoolConverter}}"
+                              HorizontalOptions="Fill">
+                            <ActivityIndicator IsRunning="True"        
+                                               Color="{AppThemeBinding Light={StaticResource PrimaryPurple}, Dark={StaticResource PrimaryPurpleDark}}"
+                                               IsVisible="{Binding Content, Converter={StaticResource ContentToInvertedBoolConverter}}"
+                                               HorizontalOptions="End"
+                                               Margin="16, 8"/>
+                            <Label Grid.Row="1" 
+                                   Text="Generating..." 
+                                   FontSize="9"
+                                   HorizontalOptions="End"
+                                   IsVisible="{Binding Content, Converter={StaticResource ContentToInvertedBoolConverter}}" />
+                            <idk:MarkdownView Grid.Row="1"
+                                              MarkdownText="{Binding Content}" 
+                                              BackgroundColor="Transparent"/>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Input Area -->
+        <Border Grid.Row="1"
+                IsEnabled="{Binding IsProcessingRequest, Converter={StaticResource InvertedBoolConverter}}"
+                BackgroundColor="{AppThemeBinding Light=White, Dark=#1A1A2A}"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}"
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource InputBackgroundLight}, Dark={StaticResource InputBackgroundDark}}"
+                        StrokeShape="RoundRectangle 24"
+                        StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}"
+                        Padding="16, 12">
+                    <Entry x:Name="MessageEntry"
+                           Text="{Binding UserPrompt}"
+                           Placeholder="Ask MauiFlow to build something amazing..."
+                           PlaceholderColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                           TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                           BackgroundColor="Transparent"
+                           FontSize="14"
+                           ReturnType="Send"
+                           ReturnCommand="{Binding EvaluatePromptCommand}"/>
+                </Border>
+                <Button Grid.Column="1" 
+                    BackgroundColor="{StaticResource PrimaryPurple}"
+                    CornerRadius="12"
+                    WidthRequest="44" 
+                    HeightRequest="44" 
+                    Margin="10,0,0,0"
+                    Text="➤" 
+                    FontSize="18"
+                    TextColor="White"
+                    Command="{Binding EvaluatePromptCommand}"
+                    IsEnabled="{Binding CanSubmitPrompt}">
+                    <Button.Shadow>
+                        <Shadow Brush="{StaticResource PrimaryPurple}"
+                                Offset="0,2"
+                                Radius="8"
+                                Opacity="0.3"/>
+                    </Button.Shadow>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentView>

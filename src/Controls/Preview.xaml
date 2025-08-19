@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:MauiFlow.Controls"
+             xmlns:segmentedControl="clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit"
+             x:Class="MauiFlow.Controls.Preview">
+    <Grid RowDefinitions="Auto, *"
+          MinimumWidthRequest="400"
+          MaximumWidthRequest="500"
+          BackgroundColor="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}"
+          IsVisible="{Binding GeneratedPreview, Converter={StaticResource ContentToBoolConverter}}">
+        <!-- Header with Tabs -->
+        <Grid>
+            <segmentedControl:SfSegmentedControl x:Name="ViewModeSelector"
+                                                 SelectedIndex="0"
+                                                 MinimumWidthRequest="250"
+                                                 HeightRequest="32"
+                                                 VerticalOptions="Center"
+                                                 Margin="12, 48, 12, 0">
+                <segmentedControl:SfSegmentedControl.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>Preview</x:String>
+                        <x:String>Code</x:String>
+                    </x:Array>
+                </segmentedControl:SfSegmentedControl.ItemsSource>
+            </segmentedControl:SfSegmentedControl>
+        </Grid>
+        <!-- Content Area -->
+        <Grid Grid.Row="1" Margin="12">
+            <!-- Preview Tab Content -->
+            <Grid x:Name="PreviewGrid" 
+                  IsVisible="{Binding Source={x:Reference ViewModeSelector}, Path=SelectedIndex, Converter={StaticResource IntToBoolConverter}, ConverterParameter=0}"
+                  BackgroundColor="{AppThemeBinding Light=White, Dark=#2A2A2A}"
+                  SizeChanged="OnPreviewGridSizeChanged">
+
+                <!-- Device -->
+                    <Border x:Name="DeviceFrame"
+                            BackgroundColor="Black"
+                            StrokeShape="RoundRectangle 15"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Padding="8">
+                        <!-- Screen Area -->
+                    <Border BackgroundColor="White"
+                            StrokeShape="RoundRectangle 8">
+                        <ContentView x:Name="PreviewArea"
+                                     Content="{Binding GeneratedPreview}"
+                                     BackgroundColor="White"
+                                     HorizontalOptions="Fill"
+                                     VerticalOptions="Fill"/>
+                    </Border>
+                </Border>
+            </Grid>
+            <!-- Code Tab Content -->
+            <ScrollView IsVisible="{Binding Source={x:Reference ViewModeSelector}, Path=SelectedIndex, Converter={StaticResource IntToBoolConverter}, ConverterParameter=1}"
+                        BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1E1E1E}">
+                <Grid RowDefinitions="*, *" Padding="16" Margin="16">
+                    <!-- XAML Code Section -->
+                    <StackLayout IsVisible="{Binding XamlCode, Converter={StaticResource StringToBoolConverter}}">
+                        <!-- Header with Copy Button -->
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+                            <Label Text="XAML"
+                                   FontFamily="OpenSansSemiBold"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   VerticalOptions="Center"/>
+                            <!-- Copy Button for XAML -->
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    WidthRequest="32" 
+                                    HeightRequest="32"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding CopyXamlCommand}" />
+                                </Border.GestureRecognizers>
+                                <Path Data="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                                      Fill="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                      Aspect="Uniform"
+                                      VerticalOptions="Center"
+                                      HorizontalOptions="Center"
+                                      WidthRequest="16"
+                                      HeightRequest="16"/>
+                            </Border>
+                        </Grid>
+                        <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D30}"
+                                StrokeShape="RoundRectangle 6"
+                                Stroke="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}"
+                                StrokeThickness="1"
+                                Padding="12">
+                            <controls:CodeEditor Text="{Binding XAMLCode}"
+                                                 HeightRequest="250"
+                                                 Theme="Light"
+                                                 Language="xaml"/>
+                        </Border>
+                    </StackLayout>
+                    <!-- C# Code Section -->
+                    <StackLayout Grid.Row="1" IsVisible="{Binding CSharpCode, Converter={StaticResource StringToBoolConverter}}">
+                        <!-- Header with Copy Button -->
+                        <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+                            <Label Text="C#"
+                                   FontFamily="OpenSansSemiBold"
+                                   FontSize="16"
+                                   TextColor="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}"
+                                   VerticalOptions="Center"/>
+                            <!-- Copy Button for C# -->
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    WidthRequest="32" 
+                                    HeightRequest="32"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding CopyCSharpCommand}" />
+                                </Border.GestureRecognizers>
+                                <Path Data="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                                      Fill="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}"
+                                      Aspect="Uniform"
+                                      VerticalOptions="Center"
+                                      HorizontalOptions="Center"
+                                      WidthRequest="16"
+                                      HeightRequest="16"/>
+                            </Border>
+                        </Grid>
+                        <Border BackgroundColor="{AppThemeBinding Light=White, Dark=#2D2D30}"
+                                StrokeShape="RoundRectangle 6"
+                                Stroke="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}"
+                                StrokeThickness="1"
+                                Padding="12">
+                            <controls:CodeEditor Text="{Binding CSharpCode}"
+                                                   HeightRequest="250"
+                                                   Theme="Light"
+                                                   Language="csharp"/>
+                        </Border>
+                    </StackLayout>
+                </Grid>
+            </ScrollView>
+        </Grid>
+    </Grid>
+</ContentView>
