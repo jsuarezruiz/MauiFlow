@@ -70,6 +70,10 @@
 	  <Compile Update="Views\MainView.xaml.cs">
 	    <DependentUpon>MainView.xaml</DependentUpon>
 	  </Compile>
+	  <!-- Temporarily exclude problematic services for demo -->
+	  <Compile Remove="Services\AzureOpenAIService.cs" />
+	  <Compile Remove="Services\AlertService.cs" />
+	  <Compile Remove="Helpers\CompilerHelper.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

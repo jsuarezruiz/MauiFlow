@@ -9,8 +9,8 @@ namespace MauiFlow.ViewModels
         LLMConfiguration _configuration;
 
         readonly SettingsService _settingsService;
-        readonly AzureOpenAIService _azureOpenAIService;
-        readonly AlertService _alertService;
+        readonly MockAzureOpenAIService _azureOpenAIService;
+        readonly MockAlertService _alertService;
 
         string _apiKey;
         string _endpoint;
@@ -18,8 +18,8 @@ namespace MauiFlow.ViewModels
 
         public SettingsViewModel(
             SettingsService settingsService, 
-            AzureOpenAIService azureOpenAIService,
-            AlertService alertService)
+            MockAzureOpenAIService azureOpenAIService,
+            MockAlertService alertService)
         {
             _settingsService = settingsService;
             _azureOpenAIService = azureOpenAIService;

@@ -15,8 +15,8 @@ namespace MauiFlow.ViewModels
         const string CODE_BEHIND_FILE_KEY = "MainPage.xaml.cs";
         const string CSHARP_FILE_KEY = "MainPage.cs";
 
-        readonly AlertService _alertService;
-        readonly AzureOpenAIService _azureOpenAIService;
+        readonly MockAlertService _alertService;
+        readonly MockAzureOpenAIService _azureOpenAIService;
         readonly AppHistoryService _appHistoryService;
 
         string _userPrompt = string.Empty;
@@ -32,8 +32,8 @@ namespace MauiFlow.ViewModels
         AppHistoryItem _selectedHistoryItem;
 
         public MainViewModel(
-            AlertService alertService, 
-            AzureOpenAIService azureOpenAIService,
+            MockAlertService alertService, 
+            MockAzureOpenAIService azureOpenAIService,
             AppHistoryService appHistoryService)
         {
             _alertService = alertService ?? throw new ArgumentNullException(nameof(alertService));
@@ -392,7 +392,7 @@ namespace MauiFlow.ViewModels
 
             try
             {
-                var compilationResult = await CompilerHelper.CompileAsync(xamlContent, codeContent);
+                var compilationResult = await MockCompilerHelper.CompileAsync(xamlContent, codeContent);
 
                 if (compilationResult.Success && compilationResult.ContentView?.Content is not null)
                 {
