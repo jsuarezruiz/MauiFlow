@@ -2,60 +2,142 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MauiFlow.Views.SettingsView">
-    <ScrollView>
-        <StackLayout Padding="20" Spacing="16">
-            <!-- API Key -->
-            <StackLayout>
-                <Label Text="API Key" 
-                       FontSize="14" 
-                       FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}"/>
-                <Entry x:Name="ApiKeyEntry"
-                       Placeholder="Enter your API key"
-                       PlaceholderColor="{StaticResource TextSecondary}"
-                       Text="{Binding ApiKey, Mode=TwoWay}"
-                       TextColor="{StaticResource TextPrimary}"
-                       BackgroundColor="{StaticResource InputBackground}"
-                       IsPassword="True"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Tab Headers -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*" Margin="0,0,0,10">
+            <Border Grid.Column="0" 
+                    Style="{StaticResource TabButtonStyle}"
+                    x:Name="AzureOpenAITab">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnAzureOpenAITabTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="Azure OpenAI" 
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center"
+                       FontAttributes="Bold" />
+            </Border>
+            <Border Grid.Column="1" 
+                    Style="{StaticResource TabButtonStyle}"
+                    x:Name="AppSettingsTab">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnAppSettingsTabTapped" />
+                </Border.GestureRecognizers>
+                <Label Text="App Settings" 
+                       HorizontalOptions="Center" 
+                       VerticalOptions="Center"
+                       FontAttributes="Bold" />
+            </Border>
+        </Grid>
+
+        <!-- Tab Content -->
+        <ScrollView Grid.Row="1">
+            <!-- Azure OpenAI Settings Tab -->
+            <StackLayout x:Name="AzureOpenAIContent" Padding="20" Spacing="16" IsVisible="True">
+                <!-- API Key -->
+                <StackLayout>
+                    <Label Text="API Key" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Entry x:Name="ApiKeyEntry"
+                           Placeholder="Enter your API key"
+                           PlaceholderColor="{StaticResource TextSecondary}"
+                           Text="{Binding ApiKey, Mode=TwoWay}"
+                           TextColor="{StaticResource TextPrimary}"
+                           BackgroundColor="{StaticResource InputBackground}"
+                           IsPassword="True"/>
+                </StackLayout>
+                
+                <!-- Endpoint URL -->
+                <StackLayout>
+                    <Label Text="Endpoint URL" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Entry x:Name="EndpointEntry"
+                           Placeholder="https://your-resource.openai.azure.com/"
+                           Text="{Binding Endpoint, Mode=TwoWay}"
+                           PlaceholderColor="{StaticResource TextSecondary}"
+                           TextColor="{StaticResource TextPrimary}"
+                           BackgroundColor="{StaticResource InputBackground}"/>
+                </StackLayout>
+                
+                <!-- Deployment Name -->
+                <StackLayout>
+                    <Label Text="Deployment Name" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Entry x:Name="DeploymentNameEntry"
+                            Placeholder="gpt5"
+                            Text="{Binding DeploymentName, Mode=TwoWay}"
+                            PlaceholderColor="{StaticResource TextSecondary}"
+                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{StaticResource InputBackground}"/>
+                </StackLayout>
+                
+                <!-- Action Buttons -->
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,20,0,0">
+                    <!-- Test Connection Button -->
+                    <Button Text="Test Connection"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Command="{Binding TestConnectionCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
+                    <Button Grid.Column="1"
+                            Text="Save"
+                            Command="{Binding SaveSettingsCommand}"
+                            Style="{StaticResource ModernButtonStyle}"/>
+                </Grid>
             </StackLayout>
-            <!-- Endpoint URL -->
-            <StackLayout>
-                <Label Text="Endpoint URL" 
-                       FontSize="14" 
-                       FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}"/>
-                <Entry x:Name="EndpointEntry"
-                       Placeholder="https://your-resource.openai.azure.com/"
-                       Text="{Binding Endpoint, Mode=TwoWay}"
-                       PlaceholderColor="{StaticResource TextSecondary}"
-                       TextColor="{StaticResource TextPrimary}"
-                       BackgroundColor="{StaticResource InputBackground}"/>
-            </StackLayout>
-            <!-- Deployment Name -->
-            <StackLayout>
-                <Label Text="Deployment Name" 
-                       FontSize="14" 
-                       FontAttributes="Bold"
-                       TextColor="{StaticResource TextPrimary}"/>
-                <Entry x:Name="DeploymentNameEntry"
-                        Placeholder="gpt5"
-                        Text="{Binding DeploymentName, Mode=TwoWay}"
-                        PlaceholderColor="{StaticResource TextSecondary}"
-                        TextColor="{StaticResource TextPrimary}"
-                        BackgroundColor="{StaticResource InputBackground}"/>
-            </StackLayout>
-            <!-- Action Buttons -->
-            <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,20,0,0">
-                <!-- Test Connection Button -->
-                <Button Text="Test Connection"
+
+            <!-- App Settings Tab -->
+            <StackLayout x:Name="AppSettingsContent" Padding="20" Spacing="16" IsVisible="False">
+                <!-- Theme Selection -->
+                <StackLayout>
+                    <Label Text="Theme" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Picker x:Name="ThemePicker"
+                            ItemsSource="{Binding ThemeOptions}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedIndexChanged="OnThemePickerSelectedIndexChanged"
+                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{StaticResource InputBackground}"/>
+                </StackLayout>
+
+                <!-- Default Project Path -->
+                <StackLayout>
+                    <Label Text="Default Project Path" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Entry Grid.Column="0"
+                               Placeholder="C:\Projects\"
+                               Text="{Binding DefaultProjectPath, Mode=TwoWay}"
+                               PlaceholderColor="{StaticResource TextSecondary}"
+                               TextColor="{StaticResource TextPrimary}"
+                               BackgroundColor="{StaticResource InputBackground}"/>
+                        <Button Grid.Column="1"
+                                Text="Browse"
+                                Command="{Binding BrowseProjectPathCommand}"
+                                Style="{StaticResource ModernButtonStyle}"
+                                Padding="12,8"/>
+                    </Grid>
+                </StackLayout>
+
+                <!-- Save Button -->
+                <Button Text="Save App Settings"
+                        Command="{Binding SaveAppSettingsCommand}"
                         Style="{StaticResource ModernButtonStyle}"
-                        Command="{Binding TestConnectionCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
-                <Button Grid.Column="1"
-                        Text="Save"
-                        Command="{Binding SaveSettingsCommand}"
-                        Style="{StaticResource ModernButtonStyle}"/>
-            </Grid>
-        </StackLayout>
-    </ScrollView>
+                        Margin="0,20,0,0"/>
+            </StackLayout>
+        </ScrollView>
+    </Grid>
 </ContentView>

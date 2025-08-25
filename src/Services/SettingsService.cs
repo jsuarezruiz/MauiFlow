@@ -7,8 +7,10 @@ namespace MauiFlow.Services
         const string ApiKey = "AzureOpenAIApiKey";
         const string EndpointKey = "AzureOpenAIEndpoint";
         const string DeploymentNameKey = "AzureOpenAIDeploymentName";
+        const string AppThemeKey = "AppTheme";
+        const string DefaultProjectPathKey = "DefaultProjectPath";
 
-        // Save settings
+        // Save LLM settings
         public async Task SaveSettingsAsync(LLMConfiguration config)
         {
             await SecureStorage.SetAsync(ApiKey, config.ApiKey ?? string.Empty);
@@ -16,7 +18,7 @@ namespace MauiFlow.Services
             await SecureStorage.SetAsync(DeploymentNameKey, config.DeploymentName ?? string.Empty);
         }
 
-        // Load settings
+        // Load LLM settings
         public async Task<LLMConfiguration> LoadSettingsAsync()
         {
             var config = new LLMConfiguration
@@ -24,6 +26,28 @@ namespace MauiFlow.Services
                 ApiKey = await SecureStorage.GetAsync(ApiKey) ?? string.Empty,
                 Endpoint = await SecureStorage.GetAsync(EndpointKey) ?? string.Empty,
                 DeploymentName = await SecureStorage.GetAsync(DeploymentNameKey) ?? string.Empty
+            };
+
+            return config;
+        }
+
+        // Save app settings
+        public async Task SaveAppSettingsAsync(AppConfiguration config)
+        {
+            await SecureStorage.SetAsync(AppThemeKey, config.Theme.ToString());
+            await SecureStorage.SetAsync(DefaultProjectPathKey, config.DefaultProjectPath ?? string.Empty);
+        }
+
+        // Load app settings
+        public async Task<AppConfiguration> LoadAppSettingsAsync()
+        {
+            var themeString = await SecureStorage.GetAsync(AppThemeKey) ?? AppTheme.System.ToString();
+            Enum.TryParse<AppTheme>(themeString, out var theme);
+
+            var config = new AppConfiguration
+            {
+                Theme = theme,
+                DefaultProjectPath = await SecureStorage.GetAsync(DefaultProjectPathKey) ?? string.Empty
             };
 
             return config;
