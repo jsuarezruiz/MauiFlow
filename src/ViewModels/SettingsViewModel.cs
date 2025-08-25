@@ -1,5 +1,6 @@
 ﻿using MauiFlow.Models;
 using MauiFlow.Services;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace MauiFlow.ViewModels
@@ -7,30 +8,47 @@ namespace MauiFlow.ViewModels
     public class SettingsViewModel : BindableObject
     {
         LLMConfiguration _configuration;
+        AppConfiguration _appConfiguration;
 
         readonly SettingsService _settingsService;
         readonly AzureOpenAIService _azureOpenAIService;
         readonly AlertService _alertService;
+        readonly ThemeService _themeService;
 
         string _apiKey;
         string _endpoint;
         string _deploymentName;
+        AppTheme _selectedTheme;
+        string _defaultProjectPath;
 
         public SettingsViewModel(
             SettingsService settingsService, 
             AzureOpenAIService azureOpenAIService,
-            AlertService alertService)
+            AlertService alertService,
+            ThemeService themeService)
         {
             _settingsService = settingsService;
             _azureOpenAIService = azureOpenAIService;
             _alertService = alertService;
+            _themeService = themeService;
 
             _configuration = new LLMConfiguration();
+            _appConfiguration = new AppConfiguration();
+
+            // Initialize theme options
+            ThemeOptions = new ObservableCollection<ThemeOption>
+            {
+                new ThemeOption { Name = "System", Value = AppTheme.System },
+                new ThemeOption { Name = "Light", Value = AppTheme.Light },
+                new ThemeOption { Name = "Dark", Value = AppTheme.Dark }
+            };
 
             // Initialize commands
             LoadSettingsCommand = new Command(async () => await LoadSettingsAsync());
             SaveSettingsCommand = new Command(async () => await SaveSettingsAsync());
             TestConnectionCommand = new Command(async () => await TestConnectionAsync());
+            SaveAppSettingsCommand = new Command(async () => await SaveAppSettingsAsync());
+            BrowseProjectPathCommand = new Command(async () => await BrowseProjectPathAsync());
 
             // Automatically load settings in the background when ViewModel is created
             _ = Task.Run(LoadSettingsAsync);
@@ -76,6 +94,39 @@ namespace MauiFlow.ViewModels
         }
 
         /// <summary>
+        /// Gets or sets the selected theme for the application.
+        /// </summary>
+        public AppTheme SelectedTheme
+        {
+            get => _selectedTheme;
+            set
+            {
+                _selectedTheme = value;
+                OnPropertyChanged();
+                // Apply theme immediately when changed
+                _themeService.ApplyTheme(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the default project path.
+        /// </summary>
+        public string DefaultProjectPath
+        {
+            get => _defaultProjectPath;
+            set
+            {
+                _defaultProjectPath = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets the collection of available theme options.
+        /// </summary>
+        public ObservableCollection<ThemeOption> ThemeOptions { get; }
+
+        /// <summary>
         /// Command that loads saved settings from local storage.
         /// </summary>
         public ICommand LoadSettingsCommand { get; }
@@ -91,15 +142,29 @@ namespace MauiFlow.ViewModels
         public ICommand TestConnectionCommand { get; }
 
         /// <summary>
+        /// Command that saves the app settings.
+        /// </summary>
+        public ICommand SaveAppSettingsCommand { get; }
+
+        /// <summary>
+        /// Command that opens a folder browser for project path selection.
+        /// </summary>
+        public ICommand BrowseProjectPathCommand { get; }
+
+        /// <summary>
         /// Loads settings from the <see cref="SettingsService"/> into the ViewModel properties.
         /// </summary>
         async Task LoadSettingsAsync()
         {
             _configuration = await _settingsService.LoadSettingsAsync();
+            _appConfiguration = await _settingsService.LoadAppSettingsAsync();
 
             ApiKey = _configuration.ApiKey;
             Endpoint = _configuration.Endpoint;
             DeploymentName = _configuration.DeploymentName;
+            
+            SelectedTheme = _appConfiguration.Theme;
+            DefaultProjectPath = _appConfiguration.DefaultProjectPath;
         }
 
         /// <summary>
@@ -122,6 +187,21 @@ namespace MauiFlow.ViewModels
 
             // Save settings
             await _settingsService.SaveSettingsAsync(_configuration);
+            await _alertService.ShowAlertAsync("Information", "Azure OpenAI settings saved successfully!");
+        }
+
+        /// <summary>
+        /// Saves the app settings.
+        /// </summary>
+        async Task SaveAppSettingsAsync()
+        {
+            // Update app configuration object with latest values
+            _appConfiguration.Theme = SelectedTheme;
+            _appConfiguration.DefaultProjectPath = DefaultProjectPath;
+
+            // Save app settings
+            await _settingsService.SaveAppSettingsAsync(_appConfiguration);
+            await _alertService.ShowAlertAsync("Information", "App settings saved successfully!");
         }
 
         async Task TestConnectionAsync()
@@ -144,5 +224,37 @@ namespace MauiFlow.ViewModels
                 await _alertService.ShowAlertAsync("Error", $"Connection test error: {ex.Message}");
             }
         }
+
+        async Task BrowseProjectPathAsync()
+        {
+            try
+            {
+                // For now, use a prompt dialog. In a real app, you'd use a folder picker
+                var result = await _alertService.ShowPromptAsync(
+                    "Default Project Path", 
+                    "Enter the default project path:", 
+                    "OK", 
+                    "Cancel", 
+                    "C:\\Projects\\", 
+                    -1, 
+                    null, 
+                    DefaultProjectPath);
+
+                if (!string.IsNullOrEmpty(result))
+                {
+                    DefaultProjectPath = result;
+                }
+            }
+            catch (Exception ex)
+            {
+                await _alertService.ShowAlertAsync("Error", $"Error selecting folder: {ex.Message}");
+            }
+        }
+    }
+
+    public class ThemeOption
+    {
+        public string Name { get; set; }
+        public AppTheme Value { get; set; }
     }
 }

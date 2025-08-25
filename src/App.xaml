@@ -63,6 +63,7 @@
             <converters:IntToBoolConverter x:Key="IntToBoolConverter"/>
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
             <converters:LineCountConverter x:Key="LineCountConverter"/>
+            <converters:ThemeToThemeOptionConverter x:Key="ThemeToThemeOptionConverter"/>
 
             <!-- Button Styles -->
             <Style TargetType="Button">
@@ -174,6 +175,15 @@
                 <Setter Property="BackgroundColor" Value="Transparent"/>
                 <Setter Property="StrokeThickness" Value="0"/>
                 <Setter Property="Padding" Value="12"/>
+                <Setter Property="StrokeShape" Value="RoundRectangle 8"/>
+            </Style>
+
+            <Style x:Key="TabButtonStyle" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource BorderColorLight}, Dark={StaticResource BorderColorDark}}"/>
+                <Setter Property="Padding" Value="16,12"/>
+                <Setter Property="Margin" Value="2"/>
                 <Setter Property="StrokeShape" Value="RoundRectangle 8"/>
             </Style>
 
