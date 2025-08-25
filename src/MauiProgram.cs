@@ -29,9 +29,10 @@ namespace MauiFlow
             builder.ConfigureSyncfusionToolkit();
             builder.UseMarkdownView();
 
-            builder.Services.AddSingleton<AlertService>();
-            builder.Services.AddSingleton<AzureOpenAIService>();
+            builder.Services.AddSingleton<MockAlertService>();
+            builder.Services.AddSingleton<MockAzureOpenAIService>();
             builder.Services.AddSingleton<SettingsService>();
+            builder.Services.AddSingleton<AppHistoryService>();
 
             builder.Services.AddSingleton<MainViewModel>();
             builder.Services.AddSingleton<SettingsViewModel>()

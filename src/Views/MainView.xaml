@@ -15,18 +15,96 @@
                 StrokeShape="RoundRectangle 12" 
                 Margin="12"
                 Stroke="Transparent">
-            <Grid ColumnDefinitions="*, Auto">
+            <Grid ColumnDefinitions="250, *, Auto">
+                
+                <!-- Left Sidebar - App History Panel -->
+                <Border Grid.Column="0" 
+                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"
+                        StrokeShape="RoundRectangle 8, 0, 0, 8"
+                        Stroke="Transparent"
+                        Padding="12">
+                    <Grid RowDefinitions="Auto, Auto, *">
+                        <!-- New App Button -->
+                        <Button Grid.Row="0"
+                                Text="+ New App"
+                                BackgroundColor="{StaticResource PrimaryPurple}"
+                                TextColor="White"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                HeightRequest="40"
+                                CornerRadius="8"
+                                Margin="0, 0, 0, 12"
+                                Command="{Binding NewAppCommand}" />
+                        
+                        <!-- History Title -->
+                        <Label Grid.Row="1"
+                               Text="Recent Apps"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
+                               Margin="0, 0, 0, 8" />
+                        
+                        <!-- History List -->
+                        <CollectionView Grid.Row="2"
+                                        ItemsSource="{Binding AppHistory}"
+                                        SelectedItem="{Binding SelectedHistoryItem}"
+                                        SelectionMode="Single"
+                                        BackgroundColor="Transparent">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                                            StrokeShape="RoundRectangle 8"
+                                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                            StrokeThickness="1"
+                                            Padding="12"
+                                            Margin="0, 0, 0, 8">
+                                        <Grid RowDefinitions="Auto, Auto, Auto">
+                                            <Label Grid.Row="0"
+                                                   Text="{Binding AppName}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
+                                                   LineBreakMode="TailTruncation"
+                                                   MaxLines="2" />
+                                            <Label Grid.Row="1"
+                                                   Text="{Binding Description}"
+                                                   FontSize="12"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}"
+                                                   LineBreakMode="TailTruncation"
+                                                   MaxLines="1"
+                                                   Margin="0, 4, 0, 0" />
+                                            <Label Grid.Row="2"
+                                                   Text="{Binding LastModifiedFormatted}"
+                                                   FontSize="10"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray500}}"
+                                                   Margin="0, 4, 0, 0" />
+                                        </Grid>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryPurple}, Dark={StaticResource PrimaryPurple}}" />
+                                                <Setter Property="Stroke" Value="{StaticResource PrimaryPurple}" />
+                                                <Setter Property="StrokeThickness" Value="2" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Border>
 
                 <!-- Main Content Area -->
-                <InitialMessageView IsVisible="{Binding HasChatStarted, Converter={StaticResource InvertedBoolConverter}}" />
-                <ChatView IsVisible="{Binding HasChatStarted}"
-                          Margin="0, 24, 0, 0"/>
+                <Grid Grid.Column="1">
+                    <InitialMessageView IsVisible="{Binding HasChatStarted, Converter={StaticResource InvertedBoolConverter}}" />
+                    <ChatView IsVisible="{Binding HasChatStarted}"
+                              Margin="0, 24, 0, 0"/>
+                </Grid>
 
                 <!-- Right Panel, Results/Preview Area -->
-                <Preview Grid.Column="1"/>
+                <Preview Grid.Column="2"/>
 
                 <!-- Toolbar -->
-                <Grid Grid.ColumnSpan="2"
+                <Grid Grid.ColumnSpan="3"
                       VerticalOptions="Start"
                       Padding="8"
                       ColumnDefinitions="Auto,*,Auto"

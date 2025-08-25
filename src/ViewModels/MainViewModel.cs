@@ -15,8 +15,9 @@ namespace MauiFlow.ViewModels
         const string CODE_BEHIND_FILE_KEY = "MainPage.xaml.cs";
         const string CSHARP_FILE_KEY = "MainPage.cs";
 
-        readonly AlertService _alertService;
-        readonly AzureOpenAIService _azureOpenAIService;
+        readonly MockAlertService _alertService;
+        readonly MockAzureOpenAIService _azureOpenAIService;
+        readonly AppHistoryService _appHistoryService;
 
         string _userPrompt = string.Empty;
         string _aiResponse = string.Empty;
@@ -27,17 +28,23 @@ namespace MauiFlow.ViewModels
         bool _isProcessingRequest;
         ObservableCollection<ChatMessage> _chatMessages;
         View _generatedPreview;
+        ObservableCollection<AppHistoryItem> _appHistory;
+        AppHistoryItem _selectedHistoryItem;
 
         public MainViewModel(
-            AlertService alertService, 
-            AzureOpenAIService azureOpenAIService)
+            MockAlertService alertService, 
+            MockAzureOpenAIService azureOpenAIService,
+            AppHistoryService appHistoryService)
         {
             _alertService = alertService ?? throw new ArgumentNullException(nameof(alertService));
             _azureOpenAIService = azureOpenAIService ?? throw new ArgumentNullException(nameof(azureOpenAIService));
+            _appHistoryService = appHistoryService ?? throw new ArgumentNullException(nameof(appHistoryService));
 
             _chatMessages = new ObservableCollection<ChatMessage>();
+            _appHistory = new ObservableCollection<AppHistoryItem>();
 
             InitializeCommands();
+            _ = LoadAppHistoryAsync(); // Load history in background
         }
 
         /// <summary>
@@ -167,6 +174,45 @@ namespace MauiFlow.ViewModels
         public bool CanSubmitPrompt => !IsProcessingRequest;
 
         /// <summary>
+        /// Gets or sets the collection of saved app history items.
+        /// </summary>
+        public ObservableCollection<AppHistoryItem> AppHistory
+        {
+            get => _appHistory;
+            set
+            {
+                _appHistory = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the currently selected app history item.
+        /// </summary>
+        public AppHistoryItem SelectedHistoryItem
+        {
+            get => _selectedHistoryItem;
+            set
+            {
+                if (_selectedHistoryItem != value)
+                {
+                    // Deselect previous item
+                    if (_selectedHistoryItem != null)
+                        _selectedHistoryItem.IsSelected = false;
+
+                    _selectedHistoryItem = value;
+                    
+                    // Select new item
+                    if (_selectedHistoryItem != null)
+                        _selectedHistoryItem.IsSelected = true;
+
+                    OnPropertyChanged();
+                    LoadSelectedAppCommand?.Execute(null);
+                }
+            }
+        }
+
+        /// <summary>
         /// Command to toggle the settings panel visibility.
         /// </summary>
         public ICommand ToggleSettingsCommand { get; set; }
@@ -192,6 +238,21 @@ namespace MauiFlow.ViewModels
         public ICommand ResetCommand { get; set; }
 
         /// <summary>
+        /// Command to create a new app (clear current state).
+        /// </summary>
+        public ICommand NewAppCommand { get; set; }
+
+        /// <summary>
+        /// Command to load a selected app from history.
+        /// </summary>
+        public ICommand LoadSelectedAppCommand { get; set; }
+
+        /// <summary>
+        /// Command to save the current app to history.
+        /// </summary>
+        public ICommand SaveCurrentAppCommand { get; set; }
+
+        /// <summary>
         /// Initializes all command objects.
         /// </summary>
         void InitializeCommands()
@@ -201,6 +262,9 @@ namespace MauiFlow.ViewModels
             CopyXamlCommand = new Command(async () => await CopyToClipboard(XAMLCode));
             CopyCSharpCommand = new Command(async () => await CopyToClipboard(CSharpCode));
             ResetCommand = new Command(ResetApplicationState);
+            NewAppCommand = new Command(CreateNewApp);
+            LoadSelectedAppCommand = new Command(async () => await LoadSelectedAppAsync());
+            SaveCurrentAppCommand = new Command(async () => await SaveCurrentAppAsync(), () => CanSaveCurrentApp());
         }
 
         /// <summary>
@@ -328,13 +392,17 @@ namespace MauiFlow.ViewModels
 
             try
             {
-                var compilationResult = await CompilerHelper.CompileAsync(xamlContent, codeContent);
+                var compilationResult = await MockCompilerHelper.CompileAsync(xamlContent, codeContent);
 
                 if (compilationResult.Success && compilationResult.ContentView?.Content is not null)
                 {
                     XAMLCode = xamlContent;
                     CSharpCode = codeContent;
                     GeneratedPreview = compilationResult.ContentView.Content;
+                    
+                    // Auto-save to history when successfully generating a new app
+                    _ = Task.Run(async () => await SaveCurrentAppAsync());
+                    
                     UserPrompt = string.Empty;
                 }
                 else
@@ -426,6 +494,112 @@ namespace MauiFlow.ViewModels
         {
             if (EvaluatePromptCommand is Command command)
                 command.ChangeCanExecute();
+            if (SaveCurrentAppCommand is Command saveCommand)
+                saveCommand.ChangeCanExecute();
+        }
+
+        /// <summary>
+        /// Creates a new app by resetting the application state.
+        /// </summary>
+        void CreateNewApp()
+        {
+            ResetApplicationState();
+        }
+
+        /// <summary>
+        /// Loads the app history from storage.
+        /// </summary>
+        async Task LoadAppHistoryAsync()
+        {
+            try
+            {
+                var history = await _appHistoryService.LoadHistoryAsync();
+                AppHistory = history;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading app history: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads the selected app from history into the current session.
+        /// </summary>
+        async Task LoadSelectedAppAsync()
+        {
+            if (SelectedHistoryItem == null)
+                return;
+
+            try
+            {
+                // Load the app data
+                UserPrompt = SelectedHistoryItem.Description;
+                XAMLCode = SelectedHistoryItem.XamlCode;
+                CSharpCode = SelectedHistoryItem.CsharpCode;
+                
+                // Load chat history
+                ChatMessages.Clear();
+                foreach (var message in SelectedHistoryItem.ChatHistory)
+                {
+                    ChatMessages.Add(message);
+                }
+
+                HasChatStarted = ChatMessages.Count > 0;
+
+                // Try to compile and show the preview if we have code
+                if (!string.IsNullOrEmpty(XAMLCode) || !string.IsNullOrEmpty(CSharpCode))
+                {
+                    var extractedFiles = new Dictionary<string, string>();
+                    if (!string.IsNullOrEmpty(XAMLCode))
+                        extractedFiles[XAML_FILE_KEY] = XAMLCode;
+                    if (!string.IsNullOrEmpty(CSharpCode))
+                        extractedFiles[CODE_BEHIND_FILE_KEY] = CSharpCode;
+
+                    await AttemptUICompilationAsync(extractedFiles);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _alertService.ShowAlertAsync("Error", $"Failed to load app: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Saves the current app state to history.
+        /// </summary>
+        async Task SaveCurrentAppAsync()
+        {
+            if (!CanSaveCurrentApp())
+                return;
+
+            try
+            {
+                var appName = _appHistoryService.GenerateAppName(UserPrompt);
+                
+                await _appHistoryService.AddAppToHistoryAsync(
+                    AppHistory,
+                    appName,
+                    UserPrompt,
+                    ChatMessages,
+                    XAMLCode,
+                    CSharpCode);
+
+                await _alertService.ShowAlertAsync("Success", $"App '{appName}' saved to history!");
+            }
+            catch (Exception ex)
+            {
+                await _alertService.ShowAlertAsync("Error", $"Failed to save app: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the current app can be saved.
+        /// </summary>
+        bool CanSaveCurrentApp()
+        {
+            return HasChatStarted && 
+                   (!string.IsNullOrEmpty(XAMLCode) || !string.IsNullOrEmpty(CSharpCode)) &&
+                   !string.IsNullOrEmpty(UserPrompt);
         }
 
         /// <summary>
