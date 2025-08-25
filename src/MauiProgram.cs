@@ -32,6 +32,7 @@ namespace MauiFlow
             builder.Services.AddSingleton<AlertService>();
             builder.Services.AddSingleton<AzureOpenAIService>();
             builder.Services.AddSingleton<SettingsService>();
+            builder.Services.AddSingleton<AppHistoryService>();
 
             builder.Services.AddSingleton<MainViewModel>();
             builder.Services.AddSingleton<SettingsViewModel>()
