@@ -20,6 +20,9 @@ public partial class SettingsView : ContentView
         // Set initial tab state
         UpdateTabAppearance(true);
         
+        // Subscribe to property changes to update theme picker
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        
         // Set initial theme picker selection
         SetThemePickerSelection();
     }
@@ -60,14 +63,17 @@ public partial class SettingsView : ContentView
 
     private void SetThemePickerSelection()
     {
-        if (_viewModel?.ThemeOptions != null)
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            var selectedOption = _viewModel.ThemeOptions.FirstOrDefault(o => o.Value == _viewModel.SelectedTheme);
-            if (selectedOption != null)
+            if (_viewModel?.ThemeOptions != null)
             {
-                ThemePicker.SelectedItem = selectedOption;
+                var selectedOption = _viewModel.ThemeOptions.FirstOrDefault(o => o.Value == _viewModel.SelectedTheme);
+                if (selectedOption != null)
+                {
+                    ThemePicker.SelectedItem = selectedOption;
+                }
             }
-        }
+        });
     }
 
     private void OnThemePickerSelectedIndexChanged(object sender, EventArgs e)
@@ -75,6 +81,14 @@ public partial class SettingsView : ContentView
         if (ThemePicker.SelectedItem is ThemeOption selectedOption)
         {
             _viewModel.SelectedTheme = selectedOption.Value;
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(_viewModel.SelectedTheme) || e.PropertyName == nameof(_viewModel.ThemeOptions))
+        {
+            SetThemePickerSelection();
         }
     }
 }
